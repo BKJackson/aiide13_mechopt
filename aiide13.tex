@@ -1,0 +1,98 @@
+%File: formatting-instruction.tex
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{todonotes}
+
+\frenchspacing
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
+
+
+\pdfinfo{
+/Title (Formatting Instructions for Authors Using LaTeX)
+/Subject (AAAI Publications)
+/Author (anonymous)}
+\setcounter{secnumdepth}{0}  
+
+
+
+ \begin{document}
+% The file aaai.sty is the style file for AAAI Press 
+% proceedings, working notes, and technical reports.
+%
+\title{Interactive Bayesian Optimization for Game Mechanics}
+\author{
+}
+% % AZ: note - technically we don't have the standard notion of ``interaction'' for the GP DDA
+
+
+
+\maketitle
+\begin{abstract}
+\begin{quote}
+\todo[inline]{fill me}
+\end{quote}
+\end{abstract}
+
+\noindent text
+
+\section{Related Work}
+
+% % DDA models
+\cite{yu2011:minboredom} uses SVM, hard to AL on this
+
+\cite{hunicke2004:dda} ad hoc
+
+
+% % AZ: brief introduction to the ideas
+\section{Gaussian Processes}
+
+\subsection{Gaussian Process Regression}
+\cite{rasmussen2006}
+
+\subsection{Gaussian Process Preference Learning}
+\cite{chu2005} 
+
+\cite{brochu2010:thesis}
+
+
+\section{Active Learning}
+\cite{settles2012:al-book}
+
+
+\section{Experiment}
+% % goal = assess model ability to:
+% % % regression = fit player to target behavior
+% % % preference = get contorls that "suit" player --> Q: how know when "good enough"?
+
+\subsection{Game Domain}
+% % SHMUP description
+
+% % adaptation knobs used for each experiment + player goals/scoring
+
+\subsection{Methods}
+% % conditions test different cases for regression-based adaptation + preference learning
+
+% % users log in online to play online, series of waves played, optimize params between waves + select
+% % % regression optimizes hyper each wave, pref does every N waves
+
+\subsection{Results}
+
+\section{Discussion}
+% % value for optimizing subjective or objective results
+
+% % enable continuous model improvement
+
+% % future: optimal experimental design (rafferty, chaloner); hcomp for more direct human participation
+
+
+\section{Acknowledgments}
+% Eric Fruchter - or possible co-author
+
+\bibliographystyle{aaai}
+\bibliography{lib}
+
+\end{document}

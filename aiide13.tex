@@ -5,6 +5,7 @@
 \usepackage{helvet}
 \usepackage{courier}
 \usepackage{todonotes}
+\usepackage{amssymb}
 
 \frenchspacing
 \setlength{\pdfpagewidth}{8.5in}
@@ -44,8 +45,9 @@
 \item quality of a set of parameters may be difficult to specify on a global scale, but instead be relative to other sets of parameters
 \end{enumerate}
 
-Interactive Bayesian optimization (closely related to active learning \cite{settles2012:al-book} and sequential experimental design \cite{chaloner1995}) approaches can address these issues through optimization of design objectives that are expensive to evaluate \cite{brochu2010tutorial}. Employing non-parametric models (here Gaussian Processes) we demonstrate the application of interactive Bayesian optimization to two cases studies of game design tuning in a shoot-em-up game: (1) optimizing player controls to player preferences and (2) adjusting enemy design parameters to enforce a desired level of player behavior.
+Interactive Bayesian optimization (closely related to active learning \cite{settles2012:al-book} and sequential experimental design \cite{chaloner1995}) approaches can address these issues through optimization of design objectives that are expensive to evaluate \cite{brochu2010:thesis}. Employing non-parametric models (here Gaussian Processes) we demonstrate the application of interactive Bayesian optimization to two cases studies of game design tuning in a shoot-em-up game: (1) optimizing player controls to player preferences and (2) adjusting enemy design parameters to enforce a desired level of player behavior.
 
+% % Q: should we optimize controls or some other aspect?
 For control optimization we demonstrate how a preference-learning approach can provide potential control settings to be tested and evaluated against the previous set of controls. Bayesian optimization affords automatic exploration-exploitation trade-offs that enable rapidly (globally) optimizing controls to player preferences via pairwise preference feedback. For enemy design optimization we demonstrate how a designer-specified objective function for player performance statistics can guide building a regression model from enemy parameter settings to desired design features.
 
 % % Q: how evaluate preference model? compare against random? player-set? naive?
@@ -68,18 +70,31 @@ First, we discuss related work in game tailoring and adaptation. Second, we moti
 \cite{bakkes2012}
 
 % % AZ: brief introduction to the ideas
-\section{Gaussian Processes}
+\section{Interactive Bayesian Optimization}
+Sequential Bayesian optimization is a modeling approach where a function is optimized through a sequence of points that are tested, each one selected by some algorithm based on previous points. Two functions are involved: (1) the \textit{objective function} that maps inputs to outputs; and (2) the \textit{acquisition function} that maps potential inputs to their value for optimizing the objective function output. In our application we employ Gaussian processes (GPs) for the objective function and a modified expected improvement acquisition function. Our approach falls under the umbrella of interactive Bayesian optimization as each point selected uses feedback provided in interaction with a human \cite{brochu2010:thesis}.
+
+Gaussian processes are a widely used non-parametric modeling technique able to capture complex non-linear relationships within a data set, automatically adjust model complexity to data, and integrate out parameters without user intervention \cite{rasmussen2006}. Intuitively, non-parametric models are models that allow for an infinite number of variables to account for the data before selecting only the subset needed to explain a given set of observations. In practice, this leads to models that automatically become more complex to fit a dataset as needed. Bayesian formulations of GP regression and classification automatically trade-off between complexity of a model and fit to a data set, avoiding overfitting and poor generalization problems that occur with optimization approaches. Bayesian model specifications allow parameters of the model to be integrated out, simplifying their use by requiring less user specification. We employ GPs to leverage the benefits of: non-linear mapping from inputs to outputs, automatic complexity adjustment with data collection, and reduced or eliminated parameter specification from users.
+
+Below we describe the formulation of GP regression and GP preference learning and then integrate GP models with active learning methods. Gaussian process regression enables automatic difficulty adjustment by modeling player performance in a game as a non-linear function of game parameters. Gaussian process preference learning enables optimization of game parameters (here controls) to player preferences by modeling player preferences for a set of game parameters as a non-linear function of game parameters than is then forced to pairwise choices between alternatives. Active learning uses a GP objective function to identify desirable next parameter settings to test, guided by a designer-specified acquisition function---here expected improvement---for parameter adjustment. For game performance, designers specify a goal of achieving a given level of in-game performance. For controls, designers specify optimal player preference.
 
 \subsection{Gaussian Process Regression}
-\cite{rasmussen2006}
+Gaussian processes are formally defined as ``a collection of random variables, any finite number of which have a joint Gaussian distribution'' \cite{rasmussen2006}. While allowing an infinite number of variables to be used, any GP model can be computed through a multivariate Gaussian distribution based on the input and output values. Gaussian processes are specified by their mean function ($m(x)$) and covariance function ($k(x,x')$):
+
+$$ f(x) \thicksim GP( m(x), k(x,x') ) $$
+Intuitively, GP regression learns a model predicting that similar inputs---according to the covariance function---should yield similar outputs. Different choices of the covariance function define different notions of similarity. In our work we employ the automatic relevancy detection (ARD) version of a squared exponential distance:
+
+$$ k(x,x') = exp\big( -\frac{1}{2} \Sigma_{l=1}^{d} \kappa^{l} (x^{l} - x'^{l})^2 \big) $$
+where $\kappa^{l} > 0$ is the ARD parameter for the $l$-th feature of a {d}-dimensional data set, serving to control the contribution of this feature to the model. Automatic relevancy detection allows us to optimize model parameters during the fitting process, automatically scaling input dimensions to minimize the impact of irrelevant aspects of the data. Mathematical properties of the GP mean that an initially zero valued mean function will taken on non-zero values after fitting data, allowing the model to be initialized with zero as the mean value (see \cite{rasmussen2006} for additional details on GP regression). In our case we will use such a zero-mean GP.
+
+For our performance regression model we predict player performance (number of times hit) from game parameters controlling enemy attacks (speed and size of bullets along with firing rate). We fit a GP regression model to player data and optimize the covariance function ARD parameters using stochastic gradient descent after each training point received. Since GP regression has a closed-form solution for learning and prediction this task can be done in near-real time with no appreciable time requirements ($< 1$ second for \todo[inline]{N training points}).
 
 \subsection{Gaussian Process Preference Learning}
-\cite{chu2005} 
+Gaussian process preference learning models choices between two possible alternatives with a GP specifying the underlying value (unobserved) of those alternatives to a user \cite{chu2005}.
 
 \cite{brochu2010:thesis}
 
 
-\section{Active Learning}
+\subsection{Active Learning}
 \cite{settles2012:al-book}
 
 

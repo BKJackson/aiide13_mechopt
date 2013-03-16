@@ -6,6 +6,7 @@
 \usepackage{courier}
 \usepackage{todonotes}
 \usepackage{amssymb}
+\usepackage{amsmath}
 
 \frenchspacing
 \setlength{\pdfpagewidth}{8.5in}
@@ -89,13 +90,35 @@ where $\kappa^{l} > 0$ is the ARD parameter for the $l$-th feature of a {d}-dime
 For our performance regression model we predict player performance (number of times hit) from game parameters controlling enemy attacks (speed and size of bullets along with firing rate). We fit a GP regression model to player data and optimize the covariance function ARD parameters using stochastic gradient descent after each training point received. Since GP regression has a closed-form solution for learning and prediction this task can be done in near-real time with no appreciable time requirements ($< 1$ second for \todo[inline]{N training points}).
 
 \subsection{Gaussian Process Preference Learning}
-Gaussian process preference learning models choices between two possible alternatives with a GP specifying the underlying value (unobserved) of those alternatives to a user \cite{chu2005}.
+We employ a pairwise preference learning model rather than using preference rating scales due to human biases. Sequential numeric ratings are subject to a cognitive anchoring bias where earlier numeric ratings influence choices on subsequent ratings \todo{cite Kahneman}. We thus employ a model that generalizes information gained from pairwise rankings to the underlying preference of users for different instances (here game parameter settings). Games can only be played sequentially during comparisons, motivating an approach of pairwise preference ratings comparing each new instance to the previous one.
 
-\cite{brochu2010:thesis}
+Gaussian process preference learning models user choices in a two-part model: (1) a GP regression model specifying the underlying  (unobserved) value of a single instance; (2) a probit model of how a choice is generated based on two instance being compared \cite{chu2005}. The GP model allows a flexible specification of how users value a given instance specified in terms of its parameters. The probit model---known in economics as the Thurstone-Mosteller law of comparative judgment---converts a pair of latent values into a comparison judgment according to the function:
+
+$$ P( x_i \succ x_j | f(x_i), f(x_j) = \Phi\bigg( \frac{f(x_j) - f_(x_j)}{\sqrt{2} \sigma_{noise}} \bigg) $$
+where $x_i, x_j$ are two instances, $f(x_i)$ is the GP latent value of an instance, $\Phi$ is the cumulative normal distribution, and $\sigma_{noise}$ is the inherent noisiness of comparative judgments. Intuitively, the probit model encodes preference judgments as based on the difference in underlying value of two instances, allowing for noise in preference ratings. 
+
+Due to the non-linear probit model used GP preference learning has no analytic learning model. Instead, we follow work by \cite{chu2005} and use a Laplace approximation to learn the underlying GP model's parameters. We employ a GP with zero mean and the ARD covariance function and optimize its parameters along with the selection of $\sigma_{noise}$ using a grid search over the space of possible parameters \todo{better optimization method}. Unlike GP regression fitting, these nested optimization processes are computationally expensive, requiring \todo{X seconds to fit N training points with D dimension}. However, we note that optimization may be performed using any-time algorithms (such as DIRECT \todo{jones et al 1993}), allowing optimization of parameters to occur while the player plays a new option. In our experiments we chose to optimize parameter values and force players to wait in order to test the best-case performance of our approach.
 
 
 \subsection{Active Learning}
-\cite{settles2012:al-book}
+Active learning (AL) is an approach to machine learning problems with a large set of unlabeled instances where a computer asks a human to provide information about given instances to learn a model of the instances as a whole \cite{settles2012:al-book}. AL is well suited to our application where the space of game parameterizations is very large and information can only be gained through the expensive process of having a human play and provide feedback about a game instance. Acquisition functions specify how a given AL algorithm weights potential instances to test based on a goal of optimizing the objective function. In our case, the GP regression model seeks to minimize the difference between desired and actual player performance and the GP preference model seeks to find the highest latent value instance.
+
+Many possible acquisition functions exist, varying in how the functions balance the exploration-exploitation trade-off guiding how locally-tethered the search for large objective functions is \cite{settles2012:al-book}. Expected improvement (EI) is an acquisition function that balances the value of unseen instances against the uncertainty regarding their values. We employ a modified EI function that incorporates a slack paramater ($\xi \ge 0$) to control the relative weighting of exploration and exploitation goals \todo{cite Lizotte}:
+
+
+% % clean up formatting
+$$ EI(x) = \begin{cases} 
+(f(x) - f(x^{+}) - \xi \Phi(Z) + \\ \sigma(x) \phi(Z)) & \mbox{if } \sigma(x) > 0 \\ 
+0 & \mbox{if } \sigma(x) = 0 
+\end{cases} $$
+where $f(x)$ is the function value at $x$, $x^{+}$ is the instance with the current greatest function value, $\sigma{x}$ is the uncertainty in the value of the instance, $\phi(Z)$ is the Gaussian distribution density at $Z$ and $Z$ is defined as:
+
+$$ Z = \begin{cases} 
+\frac{f(x) - f(x^{+}) - \xi}{\sigma(x)} & \mbox{if } \sigma(x) > 0 \\ 
+0 & \mbox{if } \sigma(x) = 0 
+\end{cases} $$
+Intuitively, $Z$ is the noise-scaled difference between the test point $x$ and the current best point $x^{+}$, and the expected improvement takes a weighted combination of this gain against the uncertainty of the point. Points that are more uncertain and expected to have higher values are preferred to those with lower values or high values that are highly certain. $\xi$ allows an explicit specification of how heavily to emphasize exploration
+
 
 
 \section{Experiment}
@@ -104,6 +127,9 @@ Gaussian process preference learning models choices between two possible alterna
 % % % preference = get contorls that "suit" player --> Q: how know when "good enough"?
 
 \subsection{Game Domain}
+
+\missingfigure{game interface if possible}
+
 % % SHMUP description
 
 % % adaptation knobs used for each experiment + player goals/scoring

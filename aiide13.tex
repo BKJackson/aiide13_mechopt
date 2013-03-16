@@ -37,7 +37,24 @@
 \end{quote}
 \end{abstract}
 
-\noindent text
+\noindent Game design often involves a final phase of substantial fine-tuning of game assets. Paradigmatic examples include varying the settings of player-controlled character movement parameters, altering opponent combat statistics, or varying low-level parameters around movement and collision of game objects. Tuning is often a time-consuming and expensive process for several reasons:
+\begin{enumerate}
+\item parameter values must be set to (globally) optimal values, requiring search over a large space
+\item evaluation of a setting cannot be done analytically or via simulation but requires costly (in terms of time and money) direct human evaluation
+\item quality of a set of parameters may be difficult to specify on a global scale, but instead be relative to other sets of parameters
+\end{enumerate}
+
+Interactive Bayesian optimization (closely related to active learning \cite{settles2012:al-book} and sequential experimental design \cite{chaloner1995}) approaches can address these issues through optimization of design objectives that are expensive to evaluate \cite{brochu2010tutorial}. Employing non-parametric models (here Gaussian Processes) we demonstrate the application of interactive Bayesian optimization to two cases studies of game design tuning in a shoot-em-up game: (1) optimizing player controls to player preferences and (2) adjusting enemy design parameters to enforce a desired level of player behavior.
+
+For control optimization we demonstrate how a preference-learning approach can provide potential control settings to be tested and evaluated against the previous set of controls. Bayesian optimization affords automatic exploration-exploitation trade-offs that enable rapidly (globally) optimizing controls to player preferences via pairwise preference feedback. For enemy design optimization we demonstrate how a designer-specified objective function for player performance statistics can guide building a regression model from enemy parameter settings to desired design features.
+
+% % Q: how evaluate preference model? compare against random? player-set? naive?
+
+First, we discuss related work in game tailoring and adaptation. Second, we motivate and describe our interactive Bayesian optization appraoch, detailing the Gaussian process regression and preference learning models. Third, we describe our shoot-em-up game and describe two empirical human studies demonstrating the efficacy of our approch. We conclude by discussing extensions and the range of applications of this modeling approach.
+% can elaborate on how model fits given some interpretive data
+
+% % AZ: content overflow - process of exploring design space in conjunction w/user by letting user set parameters
+% Finally, for joint player and enemy parameterization we demonstrate the use of a classification approach where players set player parameters and the system defines enemy parameters, seeking a desired design objective by actively setting enemies in ways to ensure that objective is met.
 
 \section{Related Work}
 
@@ -46,6 +63,9 @@
 
 \cite{hunicke2004:dda} ad hoc
 
+\cite{yannakakis2009:gameadapt} \cite{yannakakis2009:playermodel} GP pref model employed, not found best. however, we use more sophisticated kernel fn in order to better adjust fit parameters across dimensions and get back information on relative importance of dimensions
+
+\cite{bakkes2012}
 
 % % AZ: brief introduction to the ideas
 \section{Gaussian Processes}

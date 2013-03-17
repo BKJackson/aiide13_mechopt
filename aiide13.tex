@@ -7,6 +7,7 @@
 \usepackage{todonotes}
 \usepackage{amssymb}
 \usepackage{amsmath}
+\usepackage{hyperref}
 
 \frenchspacing
 \setlength{\pdfpagewidth}{8.5in}
@@ -46,14 +47,14 @@
 \item quality of a set of parameters may be difficult to specify on a global scale, but instead be relative to other sets of parameters
 \end{enumerate}
 
-Interactive Bayesian optimization (closely related to active learning \cite{settles2012:al-book} and sequential experimental design \cite{chaloner1995}) approaches can address these issues through optimization of design objectives that are expensive to evaluate \cite{brochu2010:thesis}. Employing non-parametric models (here Gaussian Processes) we demonstrate the application of interactive Bayesian optimization to two cases studies of game design tuning in a shoot-em-up game: (1) optimizing player controls to player preferences and (2) adjusting enemy design parameters to enforce a desired level of player behavior.
+Interactive Bayesian optimization (closely related to active learning \cite{settles2012:al-book} and sequential experimental design \cite{chaloner1995}) approaches can address these issues through optimization of design objectives that are expensive to evaluate \cite{brochu2010:thesis}. Employing non-parametric models (here Gaussian Processes) we demonstrate the application of interactive Bayesian optimization to two cases studies of game design tuning in a shoot-'em-up game: (1) optimizing player controls to player preferences and (2) adjusting enemy design parameters to enforce a desired level of player behavior.
 
 % % Q: should we optimize controls or some other aspect?
 For control optimization we demonstrate how a preference-learning approach can provide potential control settings to be tested and evaluated against the previous set of controls. Bayesian optimization affords automatic exploration-exploitation trade-offs that enable rapidly (globally) optimizing controls to player preferences via pairwise preference feedback. For enemy design optimization we demonstrate how a designer-specified objective function for player performance statistics can guide building a regression model from enemy parameter settings to desired design features.
 
 % % Q: how evaluate preference model? compare against random? player-set? naive?
 
-First, we discuss related work in game tailoring and adaptation. Second, we motivate and describe our interactive Bayesian optization appraoch, detailing the Gaussian process regression and preference learning models. Third, we describe our shoot-em-up game and describe two empirical human studies demonstrating the efficacy of our approch. We conclude by discussing extensions and the range of applications of this modeling approach.
+First, we discuss related work in game tailoring and adaptation. Second, we motivate and describe our interactive Bayesian optization appraoch, detailing the Gaussian process regression and preference learning models. Third, we describe our shoot-'em-up game and describe two empirical human studies demonstrating the efficacy of our approch. We conclude by discussing extensions and the range of applications of this modeling approach.
 % can elaborate on how model fits given some interpretive data
 
 % % AZ: content overflow - process of exploring design space in conjunction w/user by letting user set parameters
@@ -66,7 +67,7 @@ First, we discuss related work in game tailoring and adaptation. Second, we moti
 
 \cite{hunicke2004:dda} ad hoc
 
-\cite{yannakakis2009:gameadapt} \cite{yannakakis2009:playermodel} GP pref model employed, not found best. however, we use more sophisticated kernel fn in order to better adjust fit parameters across dimensions and get back information on relative importance of dimensions
+\cite{yannakakis2009:gameadapt} \cite{yannakakis2009:playermodel} GP pref model employed, not found best. however, we use more sophisticated kernel fn in order to better adjust fit parameters across dimensions and get back information on relative importance of dimensions. also note that GP pref generally has highest performance except in one case
 
 \cite{bakkes2012}
 
@@ -103,10 +104,10 @@ Due to the non-linear probit model used GP preference learning has no analytic l
 \subsection{Active Learning}
 Active learning (AL) is an approach to machine learning problems with a large set of unlabeled instances where a computer asks a human to provide information about given instances to learn a model of the instances as a whole \cite{settles2012:al-book}. AL is well suited to our application where the space of game parameterizations is very large and information can only be gained through the expensive process of having a human play and provide feedback about a game instance. Acquisition functions specify how a given AL algorithm weights potential instances to test based on a goal of optimizing the objective function. In our case, the GP regression model seeks to minimize the difference between desired and actual player performance and the GP preference model seeks to find the highest latent value instance.
 
-Many possible acquisition functions exist, varying in how the functions balance the exploration-exploitation trade-off guiding how locally-tethered the search for large objective functions is \cite{settles2012:al-book}. Expected improvement (EI) is an acquisition function that balances the value of unseen instances against the uncertainty regarding their values. We employ a modified EI function that incorporates a slack paramater ($\xi \ge 0$) to control the relative weighting of exploration and exploitation goals \todo{cite Lizotte}:
+Many possible acquisition functions exist, varying in how the functions balance the exploration-exploitation trade-off guiding how locally-tethered the search for large objective functions is \cite{settles2012:al-book}. Expected improvement (EI) is an acquisition function that balances the value of unseen instances against the uncertainty regarding their values. EI intergrates over all possible results to get an average-case estimate of the result, rather than seeking a best-case (or worst-case) scenario. We employ a modified EI function that incorporates a slack paramater ($\xi \ge 0$) to control the relative weighting of exploration and exploitation goals \todo{cite Lizotte}:
 
 
-% % clean up formatting
+% % clean up formatting to fit width
 $$ EI(x) = \begin{cases} 
 (f(x) - f(x^{+}) - \xi \Phi(Z) + \\ \sigma(x) \phi(Z)) & \mbox{if } \sigma(x) > 0 \\ 
 0 & \mbox{if } \sigma(x) = 0 
@@ -125,17 +126,28 @@ Intuitively, $Z$ is the noise-scaled difference between the test point $x$ and t
 % % goal = assess model ability to:
 % % % regression = fit player to target behavior
 % % % preference = get contorls that "suit" player --> Q: how know when "good enough"?
+We test our mechanics adaptation approach in a shoot-'em-up arcade game getting (Figure \ref{fig:shmup}). An arcade-style game enables our system to use a series of waves to test game parameter settings and gather feedback from the player, iteratively refining the parameter settings to a given design objective. The fast, reflex-based gameplay style of the game emphasizes aspects of game ``feel'' and helps reduce complexities involved in long-term player planning and strategy.
+
+In this section we describe our game domain and the two empirical human studies we conducted. The first study examines the use of GP regression to find and continually adjust game parameter settings to achieve a designer-specified level of performance. We show\todo[inline]{results: able to achieve small error; compare to other method?}. The second study examines the use of GP preference modeling to optimize controls to player preferences. We show \todo[inline]{results: able to match player self-set values?; compare to other model?; show number iterations needed to succeed is small?}.
 
 \subsection{Game Domain}
 
-\missingfigure{game interface if possible}
+\missingfigure{game interface if possible} \label{fig:shmup}
 
-% % SHMUP description
+% % SHMUP description: score, params
+Shoot-'em-up games emphasize reflexes and pattern recognition abilities as a player maneuvers a ship to dodge enemy shots and return fire. In our game players are scored based on the number of times they are hit: players continually gain points over time and lose points when hit by opponents\todo{update scoring as needed}. Players are encouraged to avoid enemies as best as possible either through dodging enemy attacks or destroying enemy ships to reduce the number of incoming attacks.
 
-% % adaptation knobs used for each experiment + player goals/scoring
+% % control params
+Player controls are limited to shooting at enemies and moving their ship. Ship movement is governed by two controllable parameters: drag and thrust. Drag is the ``friction'' applied to a ship that decelerates the moving ship at a constant rate when it is moving---larger values cause the ship to stop drifting in motion sooner. Thrust is the ``force'' a player movement press applies to accelerate the ship---larger values cause the ship to move more rapidly when the player presses a key to move. Combinations of thrust a drag are easy to tune to rough ranges of playability. However, the precise values needed to ensure the player has the appropriate level of control are difficult to achieve as player movement depends on how enemies attack and individual player preferences for control sensitivity (much like mouse movement sensitivity). Our preference-learning experiment allowed the system to set drag and thrust for the player while attempting to maximize player preference for a set of controls.
+% % note: should we be tuning something else that is more "complicated"?
+
+% % enemy params
+During each wave of enemies a series of opponents are created that fire bullets at the player. Enemy parameters used in our study consist of the: size of enemy bullets, speed of enemy bullets, and rate that enemies fire bullets. Increasing bullet size requires the player to move more carefully to avoid bullets. Faster bullets require quicker player reflexes to dodge incoming fire. More rapid firing rates increase the volume of incoming fire. Together these three parameters govern how much players must move to dodge enemy attacks, in turn challenging player reflexes. As with controls, getting approximate settings for these parameters is easy, but fine-tuning them for a desired level of difficulty can be challenging. Our performance adaptation experiment allowed the system to set enemy bullet size, speed, and firing rate to minimize the difference between player performance and designer-specified target performance.
+
 
 \subsection{Methods}
 % % conditions test different cases for regression-based adaptation + preference learning
+
 
 % % users log in online to play online, series of waves played, optimize params between waves + select
 % % % regression optimizes hyper each wave, pref does every N waves

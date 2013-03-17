@@ -60,16 +60,48 @@ First, we discuss related work in game tailoring and adaptation. Second, we moti
 % % AZ: content overflow - process of exploring design space in conjunction w/user by letting user set parameters
 % Finally, for joint player and enemy parameterization we demonstrate the use of a classification approach where players set player parameters and the system defines enemy parameters, seeking a desired design objective by actively setting enemies in ways to ensure that objective is met.
 
+
 \section{Related Work}
 
-% % DDA models
-\cite{yu2011:minboredom} uses SVM, hard to AL on this
+% % % key ideas for us: learning over time rather than in batch mode; explore-exploit trade-off; generalization to many tuning techniques; conceptually about ``learning design space'' rather than just picking instances for a goal; minimize designer need to know system parameters while still providing flexibility to tune; probabilistic model means modeling (learning) and generation (sampling) come from unified souce
 
-\cite{hunicke2004:dda} ad hoc
+% % hand-crafted DDA models
+Approaches to game tailoring and adaptation combine a player modeling technique with a content adaptation or generation method. Many early efforts employed a game-specific player model using vector of attributes (e.g. skills or use of content) and reactively selected new content to guide players toward a desired level of skill or intended level of performance. Hunicke and Chapman \shortcite{hunicke2004:dda} track the average and variance of player damage and inventory levels and employ a hand-crafted policy to adjust levels of enemies or powerups. \cite{magerko2006:isat}, \cite{el-nasr2007}, and \cite{thue2007:storytell-pm} model players as vectors of skills, personality traits, or pre-defined ``player types'' and select content to fit players using rule-based approaches. In contrast, a Bayesian optimization approach generalizes across games, automatically determines how complex the player model should be, and does not require designers to tune a set of rules (or other parameters) to generate content while retaining designer control over the algorithm objectives. We seek a general approach to game adaptation that enables designers to focus on specifying design goals without deep familiarity with either the player modeling or generation algorithms.
 
-\cite{yannakakis2009:gameadapt} \cite{yannakakis2009:playermodel} GP pref model employed, not found best. however, we use more sophisticated kernel fn in order to better adjust fit parameters across dimensions and get back information on relative importance of dimensions. also note that GP pref generally has highest performance except in one case
+% % simulation approaches
+% % AZ: unneeded as we're interested in adaptation, not generation w/o
+%\cite{sorenson2011} \cite{cook2013:mechanicminer} \cite{togelius2008:gamegen} \cite{hom2007:gamegen} \cite{browne2010:ludi}
+%sorenson + pasquier - requires simulation model; we don't want designers to need model of full domain / overall game quality elements, but use humans to guide process
 
-\cite{bakkes2012}
+% % encoding designer goals to get results
+% % AZ: unneeded as we're interested in adaptation, not just design implementation
+%\cite{treanor2012:gameomatic} \cite{smith2010:ludocore} \cite{smith2010:variations}
+%methods are good for exploring design space but ignore actual way players play
+
+
+% % ML/EC based models that have no principled exploration-exploitation trade-off --> our system is trying to ``learn'' space of options
+Evolutionary computing and machine learning provide frameworks for modeling players and optimizing game parameters to achieve adaptation goals.
+\cite{hastings2009:gar} tracks player use of weapons and uses neuro-evolution to generate new weapons based on those expressed preferences.
+\cite{pedersen2009:smb} employs neuro-evolution to model reported boredom, frustration, and fun with a multi-layer perceptron. 
+\cite{shaker2010:platformer-gen} use this model to generate platformer game levels through an exhaustive search process. 
+\cite{yannakakis2009:playermodel} employs the same techniques in an augmented reality game setting, attempting to optimize player satisfaction.
+\cite{yu2011:minboredom} performs a process of player modeling and adaptation through optimizing game parameters employing a large-margin support-vector machine approach that minimizes player boredom or frustration in a level-based action games. 
+Unlike these approaches we integrate feature selection into the model selection process, automatically balance model complexity with fit (rather than requiring parameter tuning), and automatically trade off exploration of possible parameter settings against exploitation (rather than only exploiting through optimization). Conceptually, the interactive Bayesian optimization approach captures a full design tuning process of testing many possible parameter settings, incrementally updating an understanding of the design space, and selectively seeking points in the space that will be most informative to design goals while still meeting design objectives.
+
+
+%\cite{yu2012:prefix-based} CF w/fixed alternatives, hard to scale to continuous parameter spaces
+%\cite{zook2012:tf} large-scale data, not iterative 
+%\cite{pons2012:scenadapt} no explore-exploit; pref-based model unclear
+
+%\cite{yannakakis2009:gameadapt} \cite{yannakakis2009:playermodel} GP pref model employed, not found best. however, we use more sophisticated kernel fn in order to better adjust fit parameters across dimensions and get back information on relative importance of dimensions. also note that GP pref generally has highest performance except in one case
+
+
+% % adaptation frameworks
+%\cite{bakkes2012} - not really applicable, but talking about personalization in terms of AI opponents at level of tactics and strategy
+
+%\cite{togelius2011:sbpcg} \cite{yannakakis2011:edpcg} are overall frameworks of things to do, but give little attention to needs of explore-exploit modeling, overfit, and other ML concerns that are crucial for succeeding; little attention to how system improves over time, rather than just attempts to fit
+
+% % AZ [NOTE] - I was explicitly terse about related work, but can easily expand out to cover other aspects as needed. As it stands the most important things are covered, but I'd forgotten about 1-page allowed for references
 
 % % AZ: brief introduction to the ideas
 \section{Interactive Bayesian Optimization}
@@ -91,20 +123,20 @@ where $\kappa^{l} > 0$ is the ARD parameter for the $l$-th feature of a {d}-dime
 For our performance regression model we predict player performance (number of times hit) from game parameters controlling enemy attacks (speed and size of bullets along with firing rate). We fit a GP regression model to player data and optimize the covariance function ARD parameters using stochastic gradient descent after each training point received. Since GP regression has a closed-form solution for learning and prediction this task can be done in near-real time with no appreciable time requirements ($< 1$ second for \todo[inline]{N training points}).
 
 \subsection{Gaussian Process Preference Learning}
-We employ a pairwise preference learning model rather than using preference rating scales due to human biases. Sequential numeric ratings are subject to a cognitive anchoring bias where earlier numeric ratings influence choices on subsequent ratings \todo{cite Kahneman}. We thus employ a model that generalizes information gained from pairwise rankings to the underlying preference of users for different instances (here game parameter settings). Games can only be played sequentially during comparisons, motivating an approach of pairwise preference ratings comparing each new instance to the previous one.
+We employ a pairwise preference learning model rather than using preference rating scales due to human biases. Sequential numeric ratings are subject to a cognitive anchoring bias where earlier numeric ratings influence choices on subsequent ratings \cite{tversky1974:biases}. We thus employ a model that generalizes information gained from pairwise rankings to the underlying preference of users for different instances (here game parameter settings). Games can only be played sequentially during comparisons, motivating an approach of pairwise preference ratings comparing each new instance to the previous one.
 
 Gaussian process preference learning models user choices in a two-part model: (1) a GP regression model specifying the underlying  (unobserved) value of a single instance; (2) a probit model of how a choice is generated based on two instance being compared \cite{chu2005}. The GP model allows a flexible specification of how users value a given instance specified in terms of its parameters. The probit model---known in economics as the Thurstone-Mosteller law of comparative judgment---converts a pair of latent values into a comparison judgment according to the function:
 
 $$ P( x_i \succ x_j | f(x_i), f(x_j) = \Phi\bigg( \frac{f(x_j) - f_(x_j)}{\sqrt{2} \sigma_{noise}} \bigg) $$
 where $x_i, x_j$ are two instances, $f(x_i)$ is the GP latent value of an instance, $\Phi$ is the cumulative normal distribution, and $\sigma_{noise}$ is the inherent noisiness of comparative judgments. Intuitively, the probit model encodes preference judgments as based on the difference in underlying value of two instances, allowing for noise in preference ratings. 
 
-Due to the non-linear probit model used GP preference learning has no analytic learning model. Instead, we follow work by \cite{chu2005} and use a Laplace approximation to learn the underlying GP model's parameters. We employ a GP with zero mean and the ARD covariance function and optimize its parameters along with the selection of $\sigma_{noise}$ using a grid search over the space of possible parameters \todo{better optimization method}. Unlike GP regression fitting, these nested optimization processes are computationally expensive, requiring \todo{X seconds to fit N training points with D dimension}. However, we note that optimization may be performed using any-time algorithms (such as DIRECT \todo{jones et al 1993}), allowing optimization of parameters to occur while the player plays a new option. In our experiments we chose to optimize parameter values and force players to wait in order to test the best-case performance of our approach.
+Due to the non-linear probit model used GP preference learning has no analytic learning model. Instead, we follow work by \cite{chu2005} and use a Laplace approximation to learn the underlying GP model's parameters. We employ a GP with zero mean and the ARD covariance function and optimize its parameters along with the selection of $\sigma_{noise}$ using a grid search over the space of possible parameters \todo{better optimization method}. Unlike GP regression fitting, these nested optimization processes are computationally expensive, requiring \todo{X seconds to fit N training points with D dimension}. However, we note that optimization may be performed using any-time algorithms (such as DIRECT \cite{jones1993:direct}), allowing optimization of parameters to occur while the player plays a new option. In our experiments we chose to optimize parameter values and force players to wait in order to test the best-case performance of our approach.
 
 
 \subsection{Active Learning}
 Active learning (AL) is an approach to machine learning problems with a large set of unlabeled instances where a computer asks a human to provide information about given instances to learn a model of the instances as a whole \cite{settles2012:al-book}. AL is well suited to our application where the space of game parameterizations is very large and information can only be gained through the expensive process of having a human play and provide feedback about a game instance. Acquisition functions specify how a given AL algorithm weights potential instances to test based on a goal of optimizing the objective function. In our case, the GP regression model seeks to minimize the difference between desired and actual player performance and the GP preference model seeks to find the highest latent value instance.
 
-Many possible acquisition functions exist, varying in how the functions balance the exploration-exploitation trade-off guiding how locally-tethered the search for large objective functions is \cite{settles2012:al-book}. Expected improvement (EI) is an acquisition function that balances the value of unseen instances against the uncertainty regarding their values. EI integrates over all possible results to get an average-case estimate of the result, rather than seeking a best-case (or worst-case) scenario. We employ a modified EI function that incorporates a slack parameter ($\xi \ge 0$) to control the relative weighting of exploration and exploitation goals \todo{cite Lizotte}:
+Many possible acquisition functions exist, varying in how the functions balance the exploration-exploitation trade-off guiding how locally-tethered the search for large objective functions is \cite{settles2012:al-book}. Expected improvement (EI) is an acquisition function that balances the value of unseen instances against the uncertainty regarding their values. EI integrates over all possible results to get an average-case estimate of the result, rather than seeking a best-case (or worst-case) scenario. We employ a modified EI function that incorporates a slack parameter ($\xi \ge 0$) to control the relative weighting of exploration and exploitation goals \cite{lizotte2008}:
 
 
 % % clean up formatting to fit width
@@ -156,6 +188,8 @@ In the control optimization study a GP preference model was fit to predict the u
 
 
 \subsection{Results}
+
+
 
 \section{Discussion}
 % % value for optimizing subjective or objective results

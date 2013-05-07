@@ -1,0 +1,12 @@
+\BOOKMARK [1][-]{section*.1}{Introduction}{}
+\BOOKMARK [1][-]{section*.2}{Related Work}{}
+\BOOKMARK [1][-]{section*.6}{Game Domain}{}
+\BOOKMARK [1][-]{section*.7}{Interactive Bayesian Optimization}{}
+\BOOKMARK [2][-]{section*.8}{Gaussian Process Regression}{section*.7}
+\BOOKMARK [2][-]{section*.9}{Gaussian Process Preference Learning}{section*.7}
+\BOOKMARK [2][-]{section*.10}{Active Learning}{section*.7}
+\BOOKMARK [1][-]{section*.11}{Experiment}{}
+\BOOKMARK [2][-]{section*.12}{Methods}{section*.11}
+\BOOKMARK [2][-]{section*.14}{Results}{section*.11}
+\BOOKMARK [1][-]{section*.15}{Discussion}{}
+\BOOKMARK [1][-]{section*.16}{Acknowledgments}{}

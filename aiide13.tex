@@ -63,40 +63,51 @@ To do so will enable the development of practical systems and tools that can:
 
 \begin{itemize}
 %\item A critical step toward a theory of the design of game mechanics.
-\item Help game developers visualize, understand, and select amongst parameters with complex tradeoffs.
+\item Help game developers visualize, understand, and select among game parameters with complex tradeoffs.
 \item Automatically tune the parameters of a game to meet design goals, taking into account a large population of diverse players.
 \item Automatically tune the parameters of a game to tailor game play to specific individual players.
 \end{itemize}
 
+\noindent
 Our central insight is to formulate the iterative design process as a form of active learning in which game players respond to an AI-chosen sent of tuning parameters.
 %with players responding to an AI-chosen game tuning. 
 Specifically, an {\em Interactive Bayesian Optimization} model for active learning makes explicit the trade-offs between improving a design and testing alternatives, while developing a model of the design space of a given game for later \mytodo{(re)use}.
 %From this perspective, 
 %A {\em design space} is a multi-dimensional domain of possible game parameter values that map to expected player behavior (and associated levels of uncertainty). A design space might specify how well players are expected to perform in a first-person shooter in response to varying levels of AI opponent accuracy or how players rate quests in an adventure game. 
+%
+%Developing this design space formalization with an AI system enables game designers to specify abstract objectives for a game design---achieving a given level of player performance in a game or getting good user ratings for provided content---rather than remain tethered to manually making numerous minor low-level changes.
+%The formal design space models learned can thus support game designers in considering the realm of possible design configurations a given game affords through visualization.
+%An AI abstraction affords better automation of the process and just-in-time tailoring of game settings to individual players.
+%Further, designers can leverage our overall approach to develop formal models of other aspects of the game design process beyond low-level tuning \mytodo{such as?}
 
-Developing this design space formalization with an AI system enables game designers to specify abstract objectives for a game design---achieving a given level of player performance in a game or getting good user ratings for provided content---rather than remain tethered to manually making numerous minor low-level changes.
-The formal design space models learned can thus support game designers in considering the realm of possible design configurations a given game affords through visualization.
-An AI abstraction affords better automation of the process and just-in-time tailoring of game settings to individual players.
-Further, designers can leverage our overall approach to develop formal models of other aspects of the game design process beyond low-level tuning \mytodo{such as?}
-
-A game design AI system synthesizes elements from several existing paradigms for the use of AI in game design. Procedural content generation examines how an AI can create content within a space of parameters.  Dynamic difficulty adjustment concerns itself with adapting game mechanics in real time to changes in users. By contrast, we focus on the problem of learning a model of how game mechanics impact player behavior. Unlike player modeling, our goal is an AI system that {\em actively} adjusts game mechanics to explore the design space for that game both to achieve a given design objective and understand how that design space works. Rather than replace game designers, a low-level game design AI system allows for a new kind of design process where an AI system automatically player-tests games and intelligently searches for designs that meet a designer-specified goal. Building a model of the game design space allows the system to transfer learning from users across multiple design objectives.
+Rather than replace game designers, a low-level game design AI system allows for a new kind of design process where an AI system automatically player-tests games and intelligently searches for designs that meet a designer-specified goal. 
+%Building a model of the game design space allows the system to transfer learning from users across multiple design objectives.
+That is, developing this design space formalization with an AI system enables game designers to specify abstract objectives for a game design---achieving a given level of player performance in a game or getting good user ratings for provided content---rather than remain tethered to manually making numerous minor low-level changes.
 
 
-We employ interactive Bayesian optimization in an AI system to choose parameter settings that are most informative about the design space while achieving given design goals for player behavior in an online human-in-the-loop iterative process \cite{brochu2010:thesis}. By explicitly modeling the trade-off between exploring very different designs and exploiting designs similar to existing ones, our approach reduces the need for extensive amounts of play-testing while also automating the tuning process.
+%A game design AI system synthesizes elements from several existing paradigms for the use of AI in game design. Procedural content generation examines how an AI can create content within a space of parameters.  Dynamic difficulty adjustment concerns itself with adapting game mechanics in real time to changes in users. By contrast, we focus on the problem of learning a model of how game mechanics impact player behavior. Unlike player modeling, our goal is an AI system that {\em actively} adjusts game mechanics to explore the design space for that game both to achieve a given design objective and understand how that design space works. 
+%Rather than replace game designers, a low-level game design AI system allows for a new kind of design process where an AI system automatically player-tests games and intelligently searches for designs that meet a designer-specified goal. Building a model of the game design space allows the system to transfer learning from users across multiple design objectives.
+
+
+We employ interactive Bayesian optimization in an AI system to choose parameter settings that are most informative about the design space while achieving given design goals for player behavior in an online human-in-the-loop iterative process \cite{brochu2010:thesis}. By explicitly modeling the trade-off between exploring very different designs and exploiting designs similar to existing ones, our approach \mytodo{theoretically?} reduces the need for extensive amounts of play-testing while also automating the tuning process.
 %Interactive Bayesian optimization (closely related to active learning \cite{settles2012:al-book} and sequential experimental design \cite{chaloner1995}) provides a method to optimize for design objectives that are expensive to evaluate \cite{brochu2010:thesis}. 
 Employing non-parametric models of the game design space (here Gaussian Processes) we demonstrate the application of interactive Bayesian optimization to two cases studies of game design tuning in a shoot-'em-up game: (1) adjusting enemy design parameters to achieve a desired level of player success and (2) optimizing controls to player preferences.
 
-We make four primary contributions:
+In this paper we make four primary contributions:
 \begin{enumerate}
-\item formulating game design tuning as an active learning process
-\item showing the improved performance of this approach over standard randomized (``A/B'') testing methods in terms of better modeling with the same quantity of data
-\item applying this approach to optimize enemy designs for a design objective on player performance
-\item applying this approach to optimizing and learning player preferences for control settings
+\item Formulation of game design tuning as an active learning process.
+\item Demonstration that interactive Bayesian optimization improves performance 
+%the improved performance of this approach 
+over standard randomized (``A/B'') testing methods in terms of better modeling with the same quantity of data.
+\item Application of this approach to optimize enemy designs for a design objective on player performance.
+\item Application of this approach to optimizing and learning player preferences for control settings.
 \end{enumerate}
+
+\noindent
 For enemy design optimization we show how a designer-specified objective function for player performance statistics can guide building a regression model from enemy parameter settings to desired player performance. To optimize controls we use preference learning to select control settings to test and evaluate against the previous set of controls. 
 In both studies, Bayesian optimization affords automatic exploration-exploitation trade-offs that enable rapidly (globally) optimizing for the design objective (player performance or preference).
 
-First, we discuss related work in game tailoring and adaptation. Second, we motivate and describe our interactive Bayesian optimization approach, detailing the Gaussian process regression and preference learning models. Third, we describe our shoot-'em-up game and two empirical human studies demonstrating the efficacy of our approach. We conclude by discussing extensions and the range of applications of this modeling approach.
+%First, we discuss related work in game tailoring and adaptation. Second, we motivate and describe our interactive Bayesian optimization approach, detailing the Gaussian process regression and preference learning models. Third, we describe our shoot-'em-up game and two empirical human studies demonstrating the efficacy of our approach. We conclude by discussing extensions and the range of applications of this modeling approach.
 % can elaborate on how model fits given some interpretive data
 
 % % AZ: content overflow - process of exploring design space in conjunction w/user by letting user set parameters

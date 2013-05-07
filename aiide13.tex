@@ -20,6 +20,7 @@
 /Author (anonymous)}
 \setcounter{secnumdepth}{0}  
 
+\newcommand{\mytodo}[1]{\textbf{[[#1]]}}
 
 
  \begin{document}
@@ -36,29 +37,49 @@
 \maketitle
 \begin{abstract}
 \begin{quote}
-\todo[inline]{fill me}
+\mytodo{fill me}
 \end{quote}
 \end{abstract}
 
-\noindent Game design often involves a final phase of substantial fine-tuning of game mechanics. Paradigmatic examples include varying the settings of player character movement parameters, altering opponent combat statistics, or varying low-level parameters around movement and collision of game objects. Tuning is often a time-consuming and expensive process due to the need for human testing (rather than analytic solutions or simulation results) and the large space of possible parameter settings for a game.
+\section{Introduction}
+
+\noindent Game design and development often involves a final phase of substantial fine-tuning of game mechanics. Paradigmatic examples include varying the settings of player character movement parameters, altering opponent combat statistics, or varying low-level parameters around movement and collision of game objects. Tuning is often a time-consuming and expensive process due to the need for human testing (rather than analytic solutions or simulation results) and the large space of possible parameter settings for a game.
 %\begin{enumerate}
 %\item parameter values must be set to (globally) optimal values, requiring search over a large space
 %\item evaluating a set of parameter values cannot be done analytically or via simulation, but requires costly (in terms of time and money) direct human evaluation
 %\item quality of a set of parameters may be difficult to specify on a global scale, and depend on other sets of parameters
 %\end{enumerate}
-We ask: %can an artificially intelligent system efficiently automate the tuning process? 
-can an artificially intelligent (AI) system act as a designer focused on the problem of parameter tuning?
-Can such a system acquire design knowledge of low-level parameter settings that achieve design goals tailored to individual players? 
+%We ask: %can an artificially intelligent system efficiently automate the tuning process? 
+%can an artificially intelligent (AI) system act as a designer focused on the problem of parameter tuning?
+%Can such a system acquire design knowledge of low-level parameter settings that achieve design goals tailored to individual players?
+%In this paper, we ask the following questions. %can an artificially intelligent system efficiently automate the tuning process? 
+%Can an artificially intelligent (AI) system learn a model of the {\em design space} of the tunable parameters of the game?
+%Can the system apply the design space model to the problem of parameter tuning to assist game developers or tailor game play to individuals?
+%Can such a system acquire design knowledge of low-level parameter settings that achieve design goals tailored to individual players?
 
-Our central insight is to formulate an iterative design process as a kind of active learning with players responding to an AI-chosen game tuning. An interactive Bayesian Optimization model for active learning makes explicit the trade-offs between improving a design and testing alternatives, while developing a model of the design space of a given game for later (re)use.
-From this perspective, a design space is a multi-dimensional domain of possible game parameter values mapping to expected player behavior (and associated levels of uncertainty). A design space might specify how well players are expected to perform in a first-person shooter in response to varying levels of AI opponent accuracy or how players rate quests in an adventure game. 
+%%% MOR: probably needs to be rewritten:
+Our long term goal is to develop an intelligent system that can learn to model the design of computer games.
+To do so will enable the development of practical systems and tools that can:
 
-Developing this design space formalization with an AI system enables game designers to specify abstract objectives for a game design---achieving a given level of player performance in a game or getting good ratings for provided content---rather than remain tethered to manually making minor low-level changes.
+\begin{itemize}
+%\item A critical step toward a theory of the design of game mechanics.
+\item Help game developers visualize, understand, and select amongst parameters with complex tradeoffs.
+\item Automatically tune the parameters of a game to meet design goals, taking into account a large population of diverse players.
+\item Automatically tune the parameters of a game to tailor game play to specific individual players.
+\end{itemize}
+
+Our central insight is to formulate the iterative design process as a form of active learning in which game players respond to an AI-chosen sent of tuning parameters.
+%with players responding to an AI-chosen game tuning. 
+Specifically, an {\em Interactive Bayesian Optimization} model for active learning makes explicit the trade-offs between improving a design and testing alternatives, while developing a model of the design space of a given game for later \mytodo{(re)use}.
+%From this perspective, 
+%A {\em design space} is a multi-dimensional domain of possible game parameter values that map to expected player behavior (and associated levels of uncertainty). A design space might specify how well players are expected to perform in a first-person shooter in response to varying levels of AI opponent accuracy or how players rate quests in an adventure game. 
+
+Developing this design space formalization with an AI system enables game designers to specify abstract objectives for a game design---achieving a given level of player performance in a game or getting good user ratings for provided content---rather than remain tethered to manually making numerous minor low-level changes.
+The formal design space models learned can thus support game designers in considering the realm of possible design configurations a given game affords through visualization.
 An AI abstraction affords better automation of the process and just-in-time tailoring of game settings to individual players.
-The formal design space models learned can support game designers in considering the realm of possible design configurations a given game affords through visualization.
-Further, designers can leverage our overall approach to develop formal models of other aspects---beyond low-level tuning---of the game design process.
+Further, designers can leverage our overall approach to develop formal models of other aspects of the game design process beyond low-level tuning \mytodo{such as?}
 
-A game design AI system synthesizes elements from several existing paradigms for the use of AI in game design. Procedural content generation examines how an AI can create content within a space of parameters.  Dynamic difficulty adjustment concerns itself with adapting game mechanics in real time to changes in users. By contrast, we focus on the problem of learning a model of how game mechanics impact player behavior. Unlike player modeling, our goal is an AI system that actively adjusts game mechanics to explore the design space for that game both to achieve a given design objective and understand how that design space works. Rather than replace game designers, a low-level game design AI system allows for a new kind of design process where an AI system automatically player-tests games and intelligently searches for designs that meet a designer-specified goal. Building a model of the game design space allows the system to transfer learning from users across multiple design objectives.
+A game design AI system synthesizes elements from several existing paradigms for the use of AI in game design. Procedural content generation examines how an AI can create content within a space of parameters.  Dynamic difficulty adjustment concerns itself with adapting game mechanics in real time to changes in users. By contrast, we focus on the problem of learning a model of how game mechanics impact player behavior. Unlike player modeling, our goal is an AI system that {\em actively} adjusts game mechanics to explore the design space for that game both to achieve a given design objective and understand how that design space works. Rather than replace game designers, a low-level game design AI system allows for a new kind of design process where an AI system automatically player-tests games and intelligently searches for designs that meet a designer-specified goal. Building a model of the game design space allows the system to transfer learning from users across multiple design objectives.
 
 
 We employ interactive Bayesian optimization in an AI system to choose parameter settings that are most informative about the design space while achieving given design goals for player behavior in an online human-in-the-loop iterative process \cite{brochu2010:thesis}. By explicitly modeling the trade-off between exploring very different designs and exploiting designs similar to existing ones, our approach reduces the need for extensive amounts of play-testing while also automating the tuning process.

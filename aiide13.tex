@@ -8,7 +8,6 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{hyperref}
-\usepackage{subcaption}
 
 \frenchspacing
 \setlength{\pdfpagewidth}{8.5in}
@@ -218,7 +217,7 @@ In this section we describe two empirical human studies we conducted. The first 
 
 \subsection{Methods}
 % % conditions test different cases for regression-based adaptation + preference learning
-We used 60 \todo{update} sessions of data in both studies. Players logged into the game online and played the game against a series of waves of enemies. Players were assigned in a balanced factorial design to either a control case that sampled random possible game parameter values or a test case that selected parameter values using interactive Bayesian optimization.
+We used 73 sessions of performance optimization (38 active learning and 35 random sampling) and 28 sessions (14 and 14) of control optimization data. Players logged into the game online and played the game against a series of waves of enemies. Players were assigned in a balanced factorial design to either a control case that sampled random possible game parameter values or a test case that selected parameter values using interactive Bayesian optimization.
 %Players were allowed to play up to 5\todo{update}, 30 second-long waves of enemies in a fixed tutorial mode to familiarize themselves with the game. For both studies players completed 15\todo{update} waves of enemies. 
 We recorded player performance in terms of number of times the player was hit and all parameter settings for each wave. Player preferences were recorded in a four option forced choice pane, selecting whether the control settings of the current wave compared to the previous wave were: better, worse, no different, or different but of equal quality.
 For analysis we examined only results from players who completed at least ten waves and only examine data from those ten waves. Preference responses only used better or worse choices.
@@ -231,6 +230,119 @@ In the control optimization study a GP preference model was fit to predict the u
 
 
 \subsection{Results}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrr}
+\hline
+wave & AL & random & p-value \\ 
+\hline
+1 & 13.18 & 8.89 & 0.19 \\ 
+2 & \textbf{8.68} & \textbf{12.57} & \textbf{0.02} \\ 
+3 & \textbf{3.89} & \textbf{10.86} & \textbf{0.01} \\ 
+4 & 7.71 & 5.37 & 0.25 \\ 
+5 & 7.34 & 5.63 & 0.96 \\ 
+6 & \textbf{13.84} & \textbf{6.80} & \textbf{0.01} \\ 
+7 & 9.79 & 4.60 & 0.07 \\ 
+8 & 10.92 & 6.57 & 0.12 \\ 
+9 & \textbf{12.18} & \textbf{6.00} & \textbf{0.00} \\ 
+10 & 10.37 & 7.17 & 0.46 \\ 
+ \hline
+\end{tabular}
+\caption{Error rates of active learning (AL) and random sampling (random) for achieving target performance rate of 6 hits per wave.}
+\label{tab:reg_error}
+\end{table}
+
+% % four analyses
+% (1) regression : error b/t desired adaptation and actual
+% (2) preference : proportion of better/worse choices
+% (3) AL regression : MSE of models on full data set
+% (4) AL preference : accuracy of models on full data set
+% (?) w/in player training?
+
+% plots: shift in parameters over time?
+We evaluated our IBO model for two capabilities: (1) achieving a given design objective, and (2) modeling the design space. Achieving a design objective meant either enforcing the target player performance goal or optimizing player preferences. We evaluated this as error from the target level of performance and proportion of better or worse choices from player subjective feedback. Modeling the design space meant building a model with better generalization to new data. We evaluated this using 10-fold cross-validation---training a model on nine tenths of our data and testing it on the remaining one tenth.
+% overview results?
+
+% regression: optimization is worse?
+For performance optimization we found our IBO approach performs equivalently to a random sampling strategy on a wave-by-wave basis (Table \ref{tab:reg_error}). We evaluated error as the difference between the number of times a player was hit and the target rate of 6 hits for each wave. We compared error rates between the two models using a Kruskal-Wallis rank sum test, a non-parametric alternative to the standard t-test used when data is not normally distributed (as is ours and most human subject data). These results showed the IBO approach had significantly ($p<0.05$) smaller error on two waves, higher error on two waves, and no difference on the remaining waves. Both methods were unable to achieve the design objective, likely due to the difficulty of enforcing such a low rate of hitting players. Alternative acquisition functions may also allow for better performance on design objectives by putting heavier emphasis on exploitation over attempting new parameter values.
+
+
+\begin{figure}[tbph]
+\centering
+\includegraphics[width=\linewidth]{pref_choice}
+\caption{Count of player subjective responses to control settings in different sampling techniques.}
+\label{fig:pref_choice}
+\end{figure}
+
+\begin{table}[tb]
+\centering
+\begin{tabular}{|c|cc|cc|}
+\hline  & \multicolumn{2}{|c|}{better} & \multicolumn{2}{|c|}{worse}  \\ 
+\hline wave & AL & random & AL & random \\ 
+\hline 2 & 4 & 6 & 4 & 4 \\ 
+\hline 3 & 6 & 2 & 3 & 7 \\ 
+\hline 4 & 12 & 7 & 1 & 6 \\ 
+\hline 5 & 0 & 7 & 14 & 4 \\ 
+\hline 6 & 3 & 4 & 2 & 8 \\ 
+\hline 7 & 7 & 6 & 4 & 6 \\ 
+\hline 8 & 4 & 7 & 3 & 5 \\ 
+\hline 9 & 8 & 4 & 2 & 7 \\ 
+\hline 10 & 2 & 6 & 5 & 7 \\ 
+\hline 
+\end{tabular}
+\caption{Comparison of frequency of preference ratings by sampling method.}
+\label{tab:pref_proportion}
+\end{table}
+
+% preference: better proportions of better, worse; more nodiff or same
+% 14 players in each
+For preference optimization we found the IBO model had a statistically significantly greater proportion of ``better'' responses (and lower ``worse'' responses) on a wave-by-wave basis compared to the random sampling approach ($\chi^2$ test, $p<0.05$ for both). Players also showed significantly greater proportion of ``no difference'' responses ($\chi^2$ test, $p<0.05$) on a wave-by-wave basis. There were too few ``equal quality'' responses (n=44 over 10 waves) to achieve statistical significance. Together, these results show the active learning model is able to capture aspects of player preference and attempt to optimize for them.
+
+Building a good design space model entails exploring the space in a way that generalizes to new parameter settings. We evaluated this by training an active learning model or random sampling strategy on a subset of nine tenths of the data before testing on the remaining one tenth of the data. We used the following standard method for evaluating active learning models: (1) set aside a random selection of 10\% of our data for testing; (2) train either random sampling or active learning on 100 sample points of the 657 points in the remaining 90\% of our data; (3) test the trained model on the test 10\%; (4) repeat the above for 10 repetitions \cite{settles2012:al-book}. In random sampling step (2) randomly selected training points. In active learning step (2) was seeded with 10 random points, then allowed to iteratively select one new training point to sample from the remaining points in the 657 point pool and retrained with the new set of data until 100 points were being used in the AL model. To examine the efficiency of the two approaches we compared the error (or accuracy) of the models as the number of samples increased.
+
+For both performance and control optimization IBO more effectively finds the right parameter settings to test to build a useful model of the design space.
+We compared mean squared error of model predictions on the held-out test data using the Kruskal-Wallis rank sum test.
+For performance optimization we found the mean squared error of predictions against actual performance levels of IBO to be significantly less ($p<???$ \todo{fill}) than that of random sampling when comparing on a wave-by-wave basis. 
+For control optimization we found the IBO model accuracy for predicting player choices was significantly higher ($p<???$ \todo{fill}) on a wave-by-wave basis. Thus, IBO uses human playtesting more effectively to automatically model a design space.
+
+While difficult to quantify, IBO shows clear trends of exploring design alternatives (e.g., Figures \ref{fig:reg_bulletsize}, \ref{fig:pref_drag}). During performance optimization IBO gradually shifts the values of enemy parameters tested, distinct from the uniform sampling approach from random sampling. During control optimization IBO shows a similar trend of trying alternatives for ship drag and thrust. These results suggest IBO is both intentionally exploring the design space and uncovering general patterns of player responses across the design space that may go unnoticed unless designers are careful to try the full range of options.
+
+\begin{figure}[tbph]
+\centering
+\includegraphics[width=\linewidth]{reg_bulletsize}
+\caption{}
+\label{fig:reg_bulletsize}
+\end{figure}
+
+%\begin{figure}[tbph]
+%\centering
+%\includegraphics[width=\linewidth]{reg_bulletspeed}
+%\caption{}
+%\label{fig:reg_bulletspeed}
+%\end{figure}
+
+%\begin{figure}[tbph]
+%\centering
+%\includegraphics[width=\linewidth]{reg_bulletspeed}
+%\caption{}
+%\label{fig:reg_cooldown}
+%\end{figure}
+
+%\begin{figure}[tbph]
+%\centering
+%\includegraphics[width=\linewidth]{pref_thrust}
+%\caption{}
+%\label{fig:pref_thrust}
+%\end{figure}
+
+\begin{figure}[tbph]
+\centering
+\includegraphics[width=\linewidth]{pref_drag}
+\caption{}
+\label{fig:pref_drag}
+\end{figure}
+
 
 
 
